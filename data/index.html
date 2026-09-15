@@ -1,0 +1,2966 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>Batterie Monitor</title>
+
+    <style>
+
+        /* =====================================================
+           GRUNDLAGE
+        ===================================================== */
+
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #101820;
+            --bg-panel: #17232d;
+            --bg-card: #1c2a35;
+            --bg-card-light: #22333f;
+
+            --border: #2b3d49;
+
+            --text: #f1f5f7;
+            --text-secondary: #9eacb5;
+            --text-muted: #71818b;
+
+            --green: #84c441;
+            --green-dark: #5f922d;
+
+            --blue: #4c9acb;
+            --orange: #f0a33a;
+            --red: #e05a5a;
+
+            --radius: 5px;
+        }
+
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100%;
+        }
+
+
+        body {
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            background:
+                var(--bg);
+
+            color:
+                var(--text);
+
+            font-size: 14px;
+        }
+
+
+        /* =====================================================
+           HEADER
+        ===================================================== */
+
+        header {
+            background:
+                #182631;
+
+            border-bottom:
+                1px solid var(--border);
+
+            padding:
+                14px 22px;
+
+            box-shadow:
+                0 2px 8px rgba(0,0,0,0.25);
+        }
+
+
+        .header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 20px;
+        }
+
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+        }
+
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+
+            border-radius: 50%;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background:
+                var(--green);
+
+            color:
+                #17232d;
+
+            font-size: 21px;
+            font-weight: bold;
+        }
+
+
+        header h1 {
+            margin: 0;
+
+            font-size: 21px;
+            font-weight: 500;
+
+            letter-spacing: 0.2px;
+        }
+
+
+        header .subtitle {
+            margin-top: 3px;
+
+            font-size: 12px;
+
+            color:
+                var(--text-secondary);
+        }
+
+
+        /* =====================================================
+           CONNECTION BAR
+        ===================================================== */
+
+        .connection {
+            max-width: 1400px;
+
+            margin:
+                14px auto 0;
+
+            padding:
+                8px 12px;
+
+            background:
+                var(--bg-panel);
+
+            border:
+                1px solid var(--border);
+
+            border-radius:
+                var(--radius);
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 15px;
+        }
+
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            color:
+                var(--text-secondary);
+
+            font-size: 12px;
+        }
+
+
+        .status-dot {
+            width: 9px;
+            height: 9px;
+
+            border-radius: 50%;
+
+            background:
+                var(--text-muted);
+
+            box-shadow:
+                0 0 5px rgba(0,0,0,0.4);
+        }
+
+
+        .status-dot.online {
+            background:
+                var(--green);
+
+            box-shadow:
+                0 0 7px rgba(132,196,65,0.55);
+        }
+
+
+        .status-dot.offline {
+            background:
+                var(--red);
+        }
+
+
+        .status-dot.warning {
+            background:
+                var(--orange);
+        }
+
+
+        #wifiMode {
+            color:
+                var(--text-muted);
+
+            font-size: 12px;
+        }
+
+
+        /* =====================================================
+           CONTAINER
+        ===================================================== */
+
+        .container {
+            max-width: 1400px;
+
+            margin: 0 auto;
+
+            padding:
+                14px 20px 30px;
+        }
+
+
+        /* =====================================================
+           TABS
+        ===================================================== */
+
+        .tab-bar {
+            max-width: 1400px;
+            margin: 18px auto 0;
+            padding: 0 20px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+
+        .tab-button {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-bottom: none;
+            border-radius: 6px 6px 0 0;
+            color: var(--text-secondary);
+            padding: 11px 18px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: inset 0 -1px 0 rgba(255,255,255,0.02);
+        }
+
+
+        .tab-button:hover {
+            color: var(--text);
+            border-color: #455d69;
+        }
+
+
+        .tab-button.active {
+            background: linear-gradient(180deg, #1d2d39 0%, #1a2a35 100%);
+            color: var(--text);
+            border-color: var(--border);
+            box-shadow: none;
+        }
+
+
+        .tab-panel {
+            display: none;
+            margin-top: 0;
+        }
+
+
+        .tab-panel.active {
+            display: block;
+        }
+
+
+        .tab-panel .grid {
+            margin-top: 0;
+        }
+
+
+        /* =====================================================
+           GRID
+        ===================================================== */
+
+        .grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(12, 1fr);
+
+            gap: 10px;
+        }
+
+
+        /* =====================================================
+           CARD
+        ===================================================== */
+
+        .card {
+            background:
+                var(--bg-card);
+
+            border:
+                1px solid var(--border);
+
+            border-radius:
+                var(--radius);
+
+            padding:
+                15px;
+
+            min-width: 0;
+        }
+
+
+        .card h2 {
+            margin:
+                0 0 13px;
+
+            font-size: 14px;
+
+            font-weight: 500;
+
+            color:
+                var(--text-secondary);
+        }
+
+
+        /* =====================================================
+           HAUPT-BATTERIE
+        ===================================================== */
+
+        .soc-card {
+            grid-column:
+                span 8;
+
+            min-height:
+                300px;
+
+            display: grid;
+
+            grid-template-columns:
+                300px 1fr;
+
+            align-items: center;
+
+            gap: 30px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #1b2b36,
+                    #17232d
+                );
+        }
+
+
+        .soc-main {
+            text-align: center;
+        }
+
+
+        /* =====================================================
+           SO-C RING
+        ===================================================== */
+
+        .soc-ring {
+            --soc: 0%;
+
+            width: 220px;
+            height: 220px;
+
+            margin:
+                0 auto;
+
+            border-radius: 50%;
+
+            background:
+                conic-gradient(
+                    var(--green) var(--soc),
+                    #2a3b46 var(--soc)
+                );
+
+            position: relative;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+
+        .soc-ring::before {
+            content: "";
+
+            position: absolute;
+
+            width: 184px;
+            height: 184px;
+
+            border-radius: 50%;
+
+            background:
+                var(--bg-card);
+
+            border:
+                1px solid #334954;
+        }
+
+
+        .soc-ring-content {
+            position: relative;
+
+            z-index: 2;
+
+            text-align: center;
+        }
+
+
+        .soc-value {
+            font-size: 48px;
+
+            line-height: 1;
+
+            font-weight: 300;
+
+            color:
+                var(--text);
+        }
+
+
+        .soc-label {
+            margin-top: 8px;
+
+            color:
+                var(--text-secondary);
+
+            font-size: 12px;
+        }
+
+
+        .soc-details {
+            padding-right: 20px;
+        }
+
+
+        .soc-details-title {
+            font-size: 18px;
+
+            color:
+                var(--text);
+
+            margin-bottom: 20px;
+        }
+
+
+        .state {
+            font-size: 19px;
+
+            font-weight: 500;
+
+            margin-bottom: 13px;
+        }
+
+
+        .state-icon {
+            display: inline-flex;
+
+            width: 30px;
+            height: 30px;
+
+            border-radius: 50%;
+
+            align-items: center;
+            justify-content: center;
+
+            margin-right: 8px;
+
+            background:
+                rgba(132,196,65,0.12);
+
+            color:
+                var(--green);
+        }
+
+
+        .power-main {
+            font-size: 34px;
+
+            font-weight: 300;
+
+            margin-top: 10px;
+        }
+
+
+        .power-sub {
+            margin-top: 4px;
+
+            color:
+                var(--text-secondary);
+
+            font-size: 12px;
+        }
+
+
+        /* =====================================================
+           WERTE-KARTEN
+        ===================================================== */
+
+        .value-card {
+            grid-column:
+                span 4;
+        }
+
+
+        .three-values {
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 1px;
+
+            background:
+                var(--border);
+
+            border:
+                1px solid var(--border);
+        }
+
+
+        .metric {
+            background:
+                var(--bg-card);
+
+            padding:
+                14px 10px;
+
+            text-align: center;
+        }
+
+
+        .metric-label {
+            color:
+                var(--text-muted);
+
+            font-size: 11px;
+
+            margin-bottom: 7px;
+        }
+
+
+        .metric-value {
+            font-size: 22px;
+
+            font-weight: 300;
+
+            color:
+                var(--text);
+        }
+
+
+        .metric-unit {
+            font-size: 11px;
+
+            color:
+                var(--text-secondary);
+        }
+
+
+        /* =====================================================
+           NORMALE VALUE ROWS
+        ===================================================== */
+
+        .value-row {
+            display: flex;
+
+            justify-content: space-between;
+            align-items: center;
+
+            gap: 10px;
+
+            padding:
+                8px 0;
+
+            border-bottom:
+                1px solid #293943;
+        }
+
+
+        .value-row:last-child {
+            border-bottom:
+                none;
+        }
+
+
+        .value-label {
+            color:
+                var(--text-secondary);
+        }
+
+
+        .value {
+            font-weight: 500;
+
+            font-size: 15px;
+
+            text-align: right;
+
+            color:
+                var(--text);
+        }
+
+
+        /* =====================================================
+           STATUS BADGES
+        ===================================================== */
+
+        .badge {
+            display: inline-block;
+
+            padding:
+                4px 9px;
+
+            border-radius:
+                3px;
+
+            font-size: 11px;
+
+            font-weight: 500;
+        }
+
+
+        .badge-full {
+            background:
+                rgba(132,196,65,0.14);
+
+            color:
+                var(--green);
+
+            border:
+                1px solid rgba(132,196,65,0.25);
+        }
+
+
+        .badge-warning {
+            background:
+                rgba(240,163,58,0.13);
+
+            color:
+                var(--orange);
+
+            border:
+                1px solid rgba(240,163,58,0.25);
+        }
+
+
+        .badge-danger {
+            background:
+                rgba(224,90,90,0.13);
+
+            color:
+                var(--red);
+        }
+
+
+        .badge-normal {
+            background:
+                rgba(255,255,255,0.05);
+
+            color:
+                var(--text-secondary);
+        }
+
+
+        /* =====================================================
+           INFO / DIAGNOSE
+        ===================================================== */
+
+        .diagnostic-card {
+            grid-column:
+                span 4;
+        }
+
+
+        .time-card {
+            grid-column:
+                span 4;
+        }
+
+
+        .voltage-card {
+            grid-column:
+                span 4;
+        }
+
+
+        .battery-card {
+            grid-column:
+                span 4;
+        }
+
+
+        .wifi-card {
+            grid-column:
+                span 4;
+        }
+
+
+        .wifi-config-card {
+            grid-column:
+                span 8;
+        }
+
+
+        table {
+            width: 100%;
+
+            border-collapse:
+                collapse;
+        }
+
+
+        th,
+        td {
+            padding:
+                8px 4px;
+
+            border-bottom:
+                1px solid #293943;
+
+            text-align: left;
+        }
+
+
+        th {
+            color:
+                var(--text-muted);
+
+            font-size: 11px;
+
+            font-weight: normal;
+        }
+
+
+        td:last-child,
+        th:last-child {
+            text-align: right;
+        }
+
+
+        .diagnostic-value {
+            font-weight: 500;
+
+            color:
+                var(--text);
+        }
+
+
+        .muted {
+            color:
+                var(--text-muted);
+
+            font-size: 11px;
+
+            line-height: 1.5;
+        }
+
+
+        /* =====================================================
+           INA ERROR
+        ===================================================== */
+
+        .ina-error {
+            background:
+                rgba(240,163,58,0.08);
+
+            border:
+                1px solid rgba(240,163,58,0.35);
+
+            color:
+                var(--orange);
+
+            border-radius:
+                var(--radius);
+
+            padding:
+                11px 13px;
+
+            margin-bottom:
+                10px;
+
+            display:
+                none;
+        }
+
+
+        .ina-error strong {
+            display: block;
+
+            margin-bottom:
+                3px;
+        }
+
+
+        /* =====================================================
+           BUTTONS
+        ===================================================== */
+
+        .button {
+            border:
+                1px solid #3b5260;
+
+            border-radius:
+                4px;
+
+            padding:
+                9px 13px;
+
+            cursor:
+                pointer;
+
+            font-size:
+                12px;
+
+            background:
+                #263945;
+
+            color:
+                var(--text);
+
+            transition:
+                background 0.15s,
+                border-color 0.15s;
+        }
+
+
+        .button:hover {
+            background:
+                #304854;
+
+            border-color:
+                #4c6472;
+        }
+
+
+        .button:disabled {
+            opacity:
+                0.45;
+
+            cursor:
+                not-allowed;
+        }
+
+
+        .button-success {
+            background:
+                #557f2e;
+
+            border-color:
+                #6c9d3b;
+        }
+
+
+        .button-success:hover {
+            background:
+                #658f37;
+        }
+
+
+        .button-danger {
+            background:
+                #713737;
+
+            border-color:
+                #8f4747;
+        }
+
+
+        .button-secondary {
+            background:
+                #293b46;
+        }
+
+
+        .button-row {
+            display:
+                flex;
+
+            flex-wrap:
+                wrap;
+
+            gap:
+                7px;
+
+            margin-top:
+                12px;
+        }
+
+
+        /* =====================================================
+           FORMULARE
+        ===================================================== */
+
+        .form-group {
+            margin-bottom:
+                10px;
+        }
+
+
+        .form-group label {
+            display:
+                block;
+
+            margin-bottom:
+                5px;
+
+            font-size:
+                11px;
+
+            color:
+                var(--text-secondary);
+        }
+
+
+        input,
+        select {
+            width:
+                100%;
+
+            padding:
+                9px 10px;
+
+            border:
+                1px solid #344a56;
+
+            border-radius:
+                4px;
+
+            font-size:
+                13px;
+
+            background:
+                #14212a;
+
+            color:
+                var(--text);
+
+            outline:
+                none;
+        }
+
+
+        input:focus,
+        select:focus {
+            border-color:
+                var(--blue);
+        }
+
+
+        .info-box {
+            background:
+                #14212a;
+
+            border:
+                1px solid #2d414d;
+
+            border-radius:
+                4px;
+
+            padding:
+                10px;
+
+            font-size:
+                12px;
+
+            color:
+                var(--text-secondary);
+        }
+
+
+        /* =====================================================
+           WLAN LISTE
+        ===================================================== */
+
+        .wifi-scan {
+            margin-top:
+                10px;
+
+            max-height:
+                250px;
+
+            overflow-y:
+                auto;
+
+            border-radius:
+                4px;
+
+            background:
+                #14212a;
+        }
+
+
+        .wifi-network {
+            padding:
+                8px;
+
+            border-bottom:
+                1px solid #293943;
+
+            cursor:
+                pointer;
+
+            font-size:
+                12px;
+
+            color:
+                var(--text-secondary);
+        }
+
+
+        .wifi-network:hover {
+            background:
+                #22343f;
+
+            color:
+                var(--text);
+        }
+
+
+        /* =====================================================
+           TOAST
+        ===================================================== */
+
+        .toast {
+            position:
+                fixed;
+
+            right:
+                18px;
+
+            bottom:
+                18px;
+
+            background:
+                #263945;
+
+            color:
+                var(--text);
+
+            border:
+                1px solid #45606e;
+
+            padding:
+                10px 15px;
+
+            border-radius:
+                4px;
+
+            box-shadow:
+                0 4px 15px rgba(0,0,0,0.4);
+
+            opacity:
+                0;
+
+            transform:
+                translateY(10px);
+
+            pointer-events:
+                none;
+
+            transition:
+                all 0.2s ease;
+
+            z-index:
+                1000;
+
+            font-size:
+                12px;
+        }
+
+
+        .toast.show {
+            opacity:
+                1;
+
+            transform:
+                translateY(0);
+        }
+
+
+        .error-value {
+            color:
+                var(--red) !important;
+        }
+
+
+        /* =====================================================
+           FOOTER
+        ===================================================== */
+
+        footer {
+            text-align:
+                center;
+
+            color:
+                #52616b;
+
+            font-size:
+                10px;
+
+            padding:
+                10px;
+        }
+
+
+        /* =====================================================
+           RESPONSIVE
+        ===================================================== */
+
+        @media (max-width: 1000px) {
+
+            .soc-card {
+                grid-column:
+                    span 12;
+            }
+
+            .value-card,
+            .diagnostic-card,
+            .time-card,
+            .voltage-card,
+            .battery-card,
+            .wifi-card {
+                grid-column:
+                    span 6;
+            }
+
+            .wifi-config-card {
+                grid-column:
+                    span 12;
+            }
+        }
+
+
+        @media (max-width: 700px) {
+
+            .container {
+                padding:
+                    10px;
+            }
+
+            .connection {
+                margin:
+                    10px;
+
+                flex-direction:
+                    column;
+
+                align-items:
+                    flex-start;
+            }
+
+
+            .grid {
+                gap:
+                    8px;
+            }
+
+
+            .soc-card {
+                grid-column:
+                    span 12;
+
+                display:
+                    block;
+
+                min-height:
+                    auto;
+
+                padding:
+                    20px;
+            }
+
+
+            .soc-details {
+                padding:
+                    20px 0 0;
+
+                text-align:
+                    center;
+            }
+
+
+            .soc-ring {
+                width:
+                    190px;
+
+                height:
+                    190px;
+            }
+
+
+            .soc-ring::before {
+                width:
+                    158px;
+
+                height:
+                    158px;
+            }
+
+
+            .soc-value {
+                font-size:
+                    48px;
+            }
+
+
+            .value-card,
+            .diagnostic-card,
+            .time-card,
+            .voltage-card,
+            .battery-card,
+            .wifi-card,
+            .wifi-config-card {
+                grid-column:
+                    span 12;
+            }
+
+
+            .three-values {
+                grid-template-columns:
+                    repeat(3, 1fr);
+            }
+
+
+            header {
+                padding:
+                    12px 14px;
+            }
+
+
+            .header-inner {
+                align-items:
+                    flex-start;
+            }
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+
+<!-- =========================================================
+     HEADER
+========================================================= -->
+
+<header>
+
+    <div class="header-inner">
+
+        <div class="brand">
+
+            <div class="brand-icon">
+                ⚡
+            </div>
+
+            <div>
+
+                <h1>
+                    Batterie Monitor
+                </h1>
+
+                <div class="subtitle">
+                    Batterieüberwachung
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<div class="container">
+
+
+    <!-- =====================================================
+         VERBINDUNG
+    ====================================================== -->
+
+    <div class="connection">
+
+        <div class="connection-status">
+
+            <span
+                id="connectionDot"
+                class="status-dot">
+            </span>
+
+            <span id="connectionText">
+                Verbinde...
+            </span>
+
+        </div>
+
+        <div id="wifiMode">
+            WLAN wird ermittelt...
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         INA FEHLER
+    ====================================================== -->
+
+    <div
+        id="inaError"
+        class="ina-error">
+
+        <strong>
+            INA226 nicht verfügbar
+        </strong>
+
+        <span>
+            Der Batterie-Shunt kann derzeit nicht
+            ausgelesen werden.
+            Spannung, Strom und Leistungswerte sind
+            deshalb nicht verfügbar.
+        </span>
+
+    </div>
+
+
+    <nav class="tab-bar" aria-label="Hauptnavigation">
+        <button type="button" class="tab-button active" data-tab="overview">Übersicht</button>
+        <button type="button" class="tab-button" data-tab="battery">Batterie</button>
+        <button type="button" class="tab-button" data-tab="wlan">WLAN</button>
+        <button type="button" class="tab-button" data-tab="diagnose">Diagnose</button>
+    </nav>
+
+    <div id="tab-overview" class="tab-panel active">
+        <div class="grid">
+
+            <div class="card soc-card">
+
+                <div class="soc-main">
+
+                    <div id="socRing" class="soc-ring" style="--soc: 0%;">
+                        <div class="soc-ring-content">
+                            <div id="soc" class="soc-value">-- %</div>
+                            <div class="soc-label">Ladezustand</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="soc-details">
+
+                    <div class="soc-details-title">Batterie</div>
+
+                    <div id="batteryState" class="state">
+                        <span class="state-icon">⚡</span>--
+                    </div>
+
+                    <div id="fullBadge"></div>
+
+                    <div id="powerMain" class="power-main">--</div>
+
+                    <div class="power-sub">Aktuelle Batterieleistung</div>
+
+                </div>
+
+            </div>
+
+            <div class="card value-card">
+
+                <h2>Aktuelle Werte</h2>
+
+                <div class="three-values">
+                    <div class="metric">
+                        <div class="metric-label">SPANNUNG</div>
+                        <div id="voltage" class="metric-value">--</div>
+                        <div class="metric-unit">Volt</div>
+                    </div>
+
+                    <div class="metric">
+                        <div class="metric-label">STROM</div>
+                        <div id="current" class="metric-value">--</div>
+                        <div class="metric-unit">Ampere</div>
+                    </div>
+
+                    <div class="metric">
+                        <div class="metric-label">LEISTUNG</div>
+                        <div id="power" class="metric-value">--</div>
+                        <div class="metric-unit">Watt</div>
+                    </div>
+                </div>
+
+                <div class="value-row" style="margin-top: 10px;">
+                    <span class="value-label">Restkapazität</span>
+                    <span id="remainingAh" class="value">-- Ah</span>
+                </div>
+
+            </div>
+
+            <div class="card diagnostic-card">
+
+                <h2>System Status</h2>
+
+                <div class="value-row">
+                    <span class="value-label">Modus</span>
+                    <span id="wifiApMode" class="value">--</span>
+                </div>
+
+                <div class="value-row">
+                    <span class="value-label">SSID</span>
+                    <span id="wifiSsid" class="value">--</span>
+                </div>
+
+                <div class="value-row">
+                    <span class="value-label">Signal</span>
+                    <span id="wifiRssi" class="value">--</span>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <div id="tab-battery" class="tab-panel">
+        <div class="grid">
+
+            <div class="card diagnostic-card">
+                <h2>Kapazität</h2>
+
+                <div class="value-row">
+                    <span class="value-label">Nennkapazität</span>
+                    <span id="capacityAh" class="value">-- Ah</span>
+                </div>
+
+                <div class="value-row">
+                    <span class="value-label">Verbrauch</span>
+                    <span id="usedAh" class="value">-- Ah</span>
+                </div>
+
+                <div class="value-row">
+                    <span class="value-label">Verbleibend</span>
+                    <span id="remainingAh2" class="value">-- Ah</span>
+                </div>
+            </div>
+
+            <div class="card time-card">
+                <h2>Zeitprognose</h2>
+
+                <div class="value-row">
+                    <span class="value-label">Ø Entladestrom</span>
+                    <span id="averageDischargeCurrent" class="value">-- A</span>
+                </div>
+
+                <div class="value-row">
+                    <span class="value-label">Ø Ladestrom</span>
+                    <span id="averageChargeCurrent" class="value">-- A</span>
+                </div>
+
+                <div class="value-row">
+                    <span class="value-label">Bis leer</span>
+                    <span id="timeToEmpty" class="value">--</span>
+                </div>
+
+                <div class="value-row">
+                    <span class="value-label">Bis voll</span>
+                    <span id="timeToFull" class="value">--</span>
+                </div>
+            </div>
+
+            <div class="card voltage-card">
+                <h2>Spannungsstatus</h2>
+
+                <div class="value-row">
+                    <span class="value-label">Aktuell</span>
+                    <span id="voltageStatus" class="value">--</span>
+                </div>
+
+                <div class="value-row">
+                    <span class="value-label">Warnung</span>
+                    <span id="lowVoltage" class="value">--</span>
+                </div>
+
+                <div class="value-row">
+                    <span class="value-label">Kritisch</span>
+                    <span id="criticalVoltage" class="value">--</span>
+                </div>
+            </div>
+
+            <div class="card battery-card">
+                <h2>Batterie</h2>
+
+                <div class="value-row">
+                    <span class="value-label">Bezeichnung</span>
+                    <span id="batteryName" class="value">--</span>
+                </div>
+
+                <div class="value-row">
+                    <span class="value-label">Shunt</span>
+                    <span id="shuntResistance2" class="value">-- µΩ</span>
+                </div>
+
+                <div class="button-row">
+                    <button class="button button-success" onclick="setBatteryFull()">Batterie auf 100 % setzen</button>
+                </div>
+
+                <p class="muted">Nur durchführen, wenn die Batterie tatsächlich vollgeladen ist.</p>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="tab-wlan" class="tab-panel">
+        <div class="grid">
+
+            <div class="card wifi-card">
+                <h2>WLAN</h2>
+
+                <div class="value-row">
+                    <span class="value-label">Modus</span>
+                    <span id="wifiApMode" class="value">--</span>
+                </div>
+
+                <div class="value-row">
+                    <span class="value-label">SSID</span>
+                    <span id="wifiSsid" class="value">--</span>
+                </div>
+
+                <div class="value-row">
+                    <span class="value-label">IP-Adresse</span>
+                    <span id="wifiIp" class="value">--</span>
+                </div>
+
+                <div class="value-row">
+                    <span class="value-label">Signal</span>
+                    <span id="wifiRssi" class="value">--</span>
+                </div>
+            </div>
+
+            <div class="card wifi-config-card">
+                <h2>WLAN konfigurieren</h2>
+
+                <form id="wifiForm">
+
+                    <div class="form-group">
+                        <label for="ssid">WLAN / SSID</label>
+                        <input type="text" id="ssid" name="ssid" autocomplete="off" placeholder="WLAN-Name">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Passwort</label>
+                        <input type="password" id="password" name="password" autocomplete="new-password" placeholder="WLAN-Passwort">
+                    </div>
+
+                    <div class="button-row">
+                        <button type="submit" class="button button-success">WLAN speichern</button>
+                        <button id="scanButton" type="button" class="button button-secondary">WLAN suchen</button>
+                        <button type="button" class="button button-danger" onclick="resetWifi()">WLAN zurücksetzen</button>
+                    </div>
+                </form>
+
+                <div id="wifiScan" class="wifi-scan"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="tab-diagnose" class="tab-panel">
+        <div class="grid">
+
+            <div class="card diagnostic-card">
+                <h2>SoC-Diagnose</h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Methode</th>
+                            <th>Wert</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Coulomb Counting</td>
+                            <td id="socCoulomb" class="diagnostic-value">-- %</td>
+                        </tr>
+                        <tr>
+                            <td>Spannung</td>
+                            <td id="socVoltage" class="diagnostic-value">-- %</td>
+                        </tr>
+                        <tr>
+                            <td>Shunt</td>
+                            <td id="shuntResistance" class="diagnostic-value">-- µΩ</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p class="muted">Der angezeigte SoC basiert primär auf Coulomb Counting. Die Spannung dient als Diagnosewert.</p>
+            </div>
+
+        </div>
+    </div>
+
+
+<footer>
+
+    Batterie Monitor
+
+</footer>
+
+
+<div
+    id="toast"
+    class="toast">
+</div>
+
+
+<script>
+
+/* =======================================================
+   VARIABLEN
+======================================================= */
+
+let lastState = null;
+let requestInProgress = false;
+let wifiScanInProgress = false;
+
+
+/* =======================================================
+   HILFSFUNKTIONEN
+======================================================= */
+
+function byId(id) {
+
+    return document.getElementById(id);
+}
+
+
+function formatNumber(
+    value,
+    decimals = 1
+) {
+
+    if (
+        value === null ||
+        value === undefined ||
+        Number.isNaN(Number(value))
+    ) {
+        return "--";
+    }
+
+    return Number(value).toFixed(decimals);
+}
+
+
+function formatHours(hours) {
+
+    if (
+        hours === null ||
+        hours === undefined ||
+        !Number.isFinite(Number(hours)) ||
+        Number(hours) <= 0
+    ) {
+        return "--";
+    }
+
+
+    const totalMinutes =
+        Math.round(
+            Number(hours) * 60
+        );
+
+
+    const h =
+        Math.floor(
+            totalMinutes / 60
+        );
+
+
+    const m =
+        totalMinutes % 60;
+
+
+    if (h > 0) {
+
+        return `${h} h ${m} min`;
+    }
+
+
+    return `${m} min`;
+}
+
+
+function showToast(message) {
+
+    const toast =
+        byId("toast");
+
+
+    toast.textContent =
+        message;
+
+
+    toast.classList.add("show");
+
+
+    setTimeout(
+        () => {
+
+            toast.classList.remove(
+                "show"
+            );
+
+        },
+        2500
+    );
+}
+
+
+function setText(
+    id,
+    value
+) {
+
+    const element =
+        byId(id);
+
+
+    if (element) {
+
+        element.textContent =
+            value;
+    }
+}
+
+
+/* =======================================================
+   VERBINDUNG
+======================================================= */
+
+function setConnection(
+    online,
+    warning = false
+) {
+
+    const dot =
+        byId("connectionDot");
+
+    const text =
+        byId("connectionText");
+
+
+    dot.classList.remove(
+        "online",
+        "offline",
+        "warning"
+    );
+
+
+    if (!online) {
+
+        dot.classList.add(
+            "offline"
+        );
+
+        text.textContent =
+            "Keine Verbindung";
+
+
+    } else if (warning) {
+
+        dot.classList.add(
+            "warning"
+        );
+
+        text.textContent =
+            "Verbunden – Messfehler";
+
+
+    } else {
+
+        dot.classList.add(
+            "online"
+        );
+
+        text.textContent =
+            "Verbunden";
+    }
+}
+
+
+/* =======================================================
+   STATE AKTUALISIEREN
+======================================================= */
+
+function updateState(data) {
+
+    lastState =
+        data;
+
+
+    let inaAvailable;
+
+
+    if (
+        data.ina226Available !== undefined
+    ) {
+
+        inaAvailable =
+            data.ina226Available === true;
+
+    } else {
+
+        inaAvailable =
+            true;
+    }
+
+
+    setConnection(
+        true,
+        !inaAvailable
+    );
+
+
+    const inaError =
+        byId("inaError");
+
+
+    if (inaAvailable) {
+
+        inaError.style.display =
+            "none";
+
+    } else {
+
+        inaError.style.display =
+            "block";
+    }
+
+
+    /* ---------------------------------------------------
+       SOC
+    --------------------------------------------------- */
+
+    const soc =
+        Number(data.soc);
+
+
+    if (Number.isFinite(soc)) {
+
+        const safeSoc =
+            Math.max(
+                0,
+                Math.min(
+                    100,
+                    soc
+                )
+            );
+
+
+        setText(
+            "soc",
+            `${safeSoc.toFixed(1)} %`
+        );
+
+
+        /*
+         * Ring aktualisieren
+         */
+
+        const socRing =
+            byId("socRing");
+
+
+        if (socRing) {
+
+            socRing.style.setProperty(
+                "--soc",
+                `${safeSoc}%`
+            );
+        }
+
+
+    } else {
+
+        setText(
+            "soc",
+            "-- %"
+        );
+
+
+        const socRing =
+            byId("socRing");
+
+
+        if (socRing) {
+
+            socRing.style.setProperty(
+                "--soc",
+                "0%"
+            );
+        }
+    }
+
+
+    /* ---------------------------------------------------
+       BATTERIEZUSTAND
+    --------------------------------------------------- */
+
+    const state =
+        data.state !== undefined
+            ? data.state
+            : "--";
+
+
+    const batteryState =
+        byId("batteryState");
+
+
+    if (batteryState) {
+
+        batteryState.innerHTML =
+            `<span class="state-icon">⚡</span>${state}`;
+    }
+
+
+    /* ---------------------------------------------------
+       FULL BADGE
+    --------------------------------------------------- */
+
+    const fullBadge =
+        byId("fullBadge");
+
+
+    if (data.full === true) {
+
+        fullBadge.innerHTML =
+            '<span class="badge badge-full">' +
+            'Batterie voll' +
+            '</span>';
+
+    } else if (!inaAvailable) {
+
+        fullBadge.innerHTML =
+            '<span class="badge badge-warning">' +
+            'Messung nicht verfügbar' +
+            '</span>';
+
+    } else {
+
+        fullBadge.innerHTML =
+            '<span class="badge badge-normal">' +
+            'Nicht voll' +
+            '</span>';
+    }
+
+
+    /* ---------------------------------------------------
+       LEISTUNG
+    --------------------------------------------------- */
+
+    if (inaAvailable) {
+
+        const voltage =
+            Number(data.voltage);
+
+        const current =
+            Number(data.current);
+
+        const power =
+            Number(data.power);
+
+
+        setText(
+            "voltage",
+            Number.isFinite(voltage)
+                ? `${voltage.toFixed(2)}`
+                : "--"
+        );
+
+
+        setText(
+            "current",
+            Number.isFinite(current)
+                ? `${current.toFixed(2)}`
+                : "--"
+        );
+
+
+        setText(
+            "power",
+            Number.isFinite(power)
+                ? `${power.toFixed(1)}`
+                : "--"
+        );
+
+
+        const powerMain =
+            byId("powerMain");
+
+
+        if (powerMain) {
+
+            if (Number.isFinite(power)) {
+
+                const sign =
+                    power > 0
+                        ? "+"
+                        : "";
+
+                powerMain.textContent =
+                    `${sign}${power.toFixed(1)} W`;
+
+            } else {
+
+                powerMain.textContent =
+                    "--";
+            }
+        }
+
+
+    } else {
+
+        setText(
+            "voltage",
+            "--"
+        );
+
+        setText(
+            "current",
+            "--"
+        );
+
+        setText(
+            "power",
+            "--"
+        );
+
+
+        setText(
+            "powerMain",
+            "--"
+        );
+    }
+
+
+    /* ---------------------------------------------------
+       KAPAZITÄT
+    --------------------------------------------------- */
+
+    setText(
+        "capacityAh",
+        `${formatNumber(
+            data.capacityAh,
+            1
+        )} Ah`
+    );
+
+
+    setText(
+        "usedAh",
+        `${formatNumber(
+            data.usedAh,
+            2
+        )} Ah`
+    );
+
+
+    setText(
+        "remainingAh",
+        `${formatNumber(
+            data.remainingAh,
+            1
+        )} Ah`
+    );
+
+
+    setText(
+        "remainingAh2",
+        `${formatNumber(
+            data.remainingAh,
+            1
+        )} Ah`
+    );
+
+
+    /* ---------------------------------------------------
+       SOC DIAGNOSE
+    --------------------------------------------------- */
+
+    setText(
+        "socCoulomb",
+        `${formatNumber(
+            data.socCoulomb,
+            1
+        )} %`
+    );
+
+
+    setText(
+        "socVoltage",
+        `${formatNumber(
+            data.socVoltage,
+            1
+        )} %`
+    );
+
+
+    /* ---------------------------------------------------
+       SHUNT
+    --------------------------------------------------- */
+
+    if (
+        data.shuntResistanceOhm !== undefined &&
+        Number.isFinite(
+            Number(
+                data.shuntResistanceOhm
+            )
+        )
+    ) {
+
+        const shuntMicroOhm =
+            Number(
+                data.shuntResistanceOhm
+            ) *
+            1000000;
+
+
+        setText(
+            "shuntResistance",
+            `${shuntMicroOhm.toFixed(1)} µΩ`
+        );
+
+
+        setText(
+            "shuntResistance2",
+            `${shuntMicroOhm.toFixed(1)} µΩ`
+        );
+
+    } else {
+
+        setText(
+            "shuntResistance",
+            "-- µΩ"
+        );
+
+
+        setText(
+            "shuntResistance2",
+            "-- µΩ"
+        );
+    }
+
+
+    /* ---------------------------------------------------
+       ZEIT
+    --------------------------------------------------- */
+
+    setText(
+        "averageDischargeCurrent",
+        `${formatNumber(
+            data.averageDischargeCurrent,
+            2
+        )} A`
+    );
+
+
+    setText(
+        "averageChargeCurrent",
+        `${formatNumber(
+            data.averageChargeCurrent,
+            2
+        )} A`
+    );
+
+
+    setText(
+        "timeToEmpty",
+        formatHours(
+            data.timeToEmptyHours
+        )
+    );
+
+
+    setText(
+        "timeToFull",
+        formatHours(
+            data.timeToFullHours
+        )
+    );
+
+
+    /* ---------------------------------------------------
+       SPANNUNG
+    --------------------------------------------------- */
+
+    if (
+        inaAvailable &&
+        Number.isFinite(
+            Number(data.voltage)
+        )
+    ) {
+
+        setText(
+            "voltageStatus",
+            `${formatNumber(
+                data.voltage,
+                2
+            )} V`
+        );
+
+    } else {
+
+        setText(
+            "voltageStatus",
+            "--"
+        );
+    }
+
+
+    setText(
+        "lowVoltage",
+        data.lowVoltage === true
+            ? "WARNUNG"
+            : "OK"
+    );
+
+
+    setText(
+        "criticalVoltage",
+        data.criticalVoltage === true
+            ? "KRITISCH"
+            : "OK"
+    );
+
+
+    const voltageStatus =
+        byId("voltageStatus");
+
+
+    voltageStatus.classList.remove(
+        "error-value"
+    );
+
+
+    if (
+        data.criticalVoltage === true ||
+        data.lowVoltage === true
+    ) {
+
+        voltageStatus.classList.add(
+            "error-value"
+        );
+    }
+
+
+    /* ---------------------------------------------------
+       BATTERIE
+    --------------------------------------------------- */
+
+    setText(
+        "batteryName",
+        data.name ||
+        "Batterie"
+    );
+
+
+    /* ---------------------------------------------------
+       WLAN
+    --------------------------------------------------- */
+
+    if (data.wifi) {
+
+        const wifi =
+            data.wifi;
+
+
+        setText(
+            "wifiMode",
+            wifi.apMode
+                ? "Access Point"
+                : "WLAN verbunden"
+        );
+
+
+        setText(
+            "wifiApMode",
+            wifi.apMode
+                ? "Access Point"
+                : "Station"
+        );
+
+
+        setText(
+            "wifiSsid",
+            wifi.ssid ||
+            "--"
+        );
+
+
+        setText(
+            "wifiIp",
+            wifi.ip ||
+            "--"
+        );
+
+
+        if (
+            wifi.rssi !== undefined &&
+            wifi.rssi !== null &&
+            Number(wifi.rssi) !== 0
+        ) {
+
+            setText(
+                "wifiRssi",
+                `${wifi.rssi} dBm`
+            );
+
+        } else {
+
+            setText(
+                "wifiRssi",
+                "--"
+            );
+        }
+    }
+}
+
+
+/* =======================================================
+   API STATE
+======================================================= */
+
+async function loadState() {
+
+    if (requestInProgress) {
+        return;
+    }
+
+
+    requestInProgress =
+        true;
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/state",
+                {
+                    cache:
+                        "no-store"
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "HTTP " +
+                response.status
+            );
+        }
+
+
+        const data =
+            await response.json();
+
+
+        updateState(
+            data
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Fehler beim Abrufen des Batteriestatus:",
+            error
+        );
+
+
+        setConnection(
+            false
+        );
+
+
+    } finally {
+
+        requestInProgress =
+            false;
+    }
+}
+
+
+/* =======================================================
+   BATTERIE AUF 100 %
+======================================================= */
+
+async function setBatteryFull() {
+
+    if (
+        !confirm(
+            "Soll die Batterie wirklich auf 100 % gesetzt werden?"
+        )
+    ) {
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/full",
+                {
+                    method:
+                        "POST"
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "HTTP " +
+                response.status
+            );
+        }
+
+
+        showToast(
+            "Batterie wurde auf 100 % gesetzt."
+        );
+
+
+        await loadState();
+
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
+
+
+        showToast(
+            "Fehler beim Setzen des Ladezustands."
+        );
+    }
+}
+
+
+/* =======================================================
+   WLAN SPEICHERN
+======================================================= */
+
+byId("wifiForm").addEventListener(
+    "submit",
+    async function(event) {
+
+        event.preventDefault();
+
+
+        const ssid =
+            byId("ssid")
+                .value
+                .trim();
+
+
+        const password =
+            byId("password")
+                .value;
+
+
+        if (!ssid) {
+
+            showToast(
+                "Bitte eine SSID eingeben."
+            );
+
+            return;
+        }
+
+
+        try {
+
+            const body =
+                "ssid=" +
+                encodeURIComponent(ssid) +
+                "&password=" +
+                encodeURIComponent(password);
+
+
+            const response =
+                await fetch(
+                    "/api/wifi/save",
+                    {
+                        method:
+                            "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/x-www-form-urlencoded"
+                        },
+
+                        body:
+                            body
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "HTTP " +
+                    response.status
+                );
+            }
+
+
+            showToast(
+                "WLAN-Daten gespeichert. ESP32 verbindet sich neu."
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                error
+            );
+
+
+            showToast(
+                "Fehler beim Speichern der WLAN-Daten."
+            );
+        }
+    }
+);
+
+
+/* =======================================================
+   WLAN SCAN
+======================================================= */
+
+async function scanWifi() {
+
+    if (wifiScanInProgress) {
+        return;
+    }
+
+
+    wifiScanInProgress =
+        true;
+
+
+    const scanContainer =
+        byId("wifiScan");
+
+
+    const scanButton =
+        byId("scanButton");
+
+
+    scanContainer.innerHTML =
+        '<div class="info-box">' +
+        'Suche nach WLAN-Netzen...' +
+        '</div>';
+
+
+    if (scanButton) {
+
+        scanButton.disabled =
+            true;
+
+        scanButton.textContent =
+            "Suche läuft...";
+    }
+
+
+    try {
+
+        const startResponse =
+            await fetch(
+                "/api/wifi/scan",
+                {
+                    method:
+                        "GET",
+
+                    cache:
+                        "no-store"
+                }
+            );
+
+
+        if (!startResponse.ok) {
+
+            throw new Error(
+                "HTTP " +
+                startResponse.status
+            );
+        }
+
+
+        const start =
+            await startResponse.json();
+
+
+        if (
+            start.started !== true &&
+            start.running !== true
+        ) {
+
+            throw new Error(
+                "WLAN-Scan konnte nicht gestartet werden."
+            );
+        }
+
+
+        for (
+            let attempt = 0;
+            attempt < 40;
+            attempt++
+        ) {
+
+            await new Promise(
+                resolve =>
+                    setTimeout(
+                        resolve,
+                        500
+                    )
+            );
+
+
+            const response =
+                await fetch(
+                    "/api/wifi/scan/status",
+                    {
+                        cache:
+                            "no-store"
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Status HTTP " +
+                    response.status
+                );
+            }
+
+
+            const status =
+                await response.json();
+
+
+            if (
+                status.running === true
+            ) {
+
+                continue;
+            }
+
+
+            if (
+                status.finished === true
+            ) {
+
+                if (
+                    Number(status.count) < 0
+                ) {
+
+                    throw new Error(
+                        "WLAN-Scan fehlgeschlagen."
+                    );
+                }
+
+
+                const networks =
+                    Array.isArray(
+                        status.networks
+                    )
+                        ? status.networks
+                        : [];
+
+
+                if (
+                    networks.length === 0
+                ) {
+
+                    scanContainer.innerHTML =
+                        '<div class="info-box">' +
+                        'Keine WLAN-Netze gefunden.' +
+                        '</div>';
+
+                    return;
+                }
+
+
+                scanContainer.innerHTML =
+                    "";
+
+
+                networks.forEach(
+                    function(network) {
+
+                        const div =
+                            document.createElement(
+                                "div"
+                            );
+
+
+                        div.className =
+                            "wifi-network";
+
+
+                        const ssid =
+                            network.ssid ||
+                            "(verstecktes WLAN)";
+
+
+                        const rssi =
+                            network.rssi !== undefined
+                                ? `${network.rssi} dBm`
+                                : "";
+
+
+                        const channel =
+                            network.channel !== undefined
+                                ? ` · Kanal ${network.channel}`
+                                : "";
+
+
+                        const encryption =
+                            network.encryption === true
+                                ? "🔒"
+                                : "🔓";
+
+
+                        div.textContent =
+                            `${encryption} ${ssid} ${rssi}${channel}`;
+
+
+                        div.onclick =
+                            function() {
+
+                                if (
+                                    network.ssid
+                                ) {
+
+                                    byId("ssid").value =
+                                        network.ssid;
+
+
+                                    showToast(
+                                        "SSID übernommen."
+                                    );
+                                }
+                            };
+
+
+                        scanContainer.appendChild(
+                            div
+                        );
+
+                    }
+                );
+
+
+                showToast(
+                    `${networks.length} WLAN-Netzwerke gefunden.`
+                );
+
+
+                return;
+            }
+        }
+
+
+        throw new Error(
+            "WLAN-Scan Timeout."
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "WLAN-Scan:",
+            error
+        );
+
+
+        scanContainer.innerHTML =
+            '<div class="info-box">' +
+            'WLAN-Suche fehlgeschlagen.' +
+            '</div>';
+
+
+        showToast(
+            "WLAN-Suche fehlgeschlagen."
+        );
+
+
+    } finally {
+
+        wifiScanInProgress =
+            false;
+
+
+        if (scanButton) {
+
+            scanButton.disabled =
+                false;
+
+            scanButton.textContent =
+                "WLAN suchen";
+        }
+    }
+}
+
+
+/* =======================================================
+   WLAN SCAN BUTTON
+======================================================= */
+
+const scanButton =
+    byId("scanButton");
+
+
+if (scanButton) {
+
+    scanButton.addEventListener(
+        "click",
+        scanWifi
+    );
+}
+
+
+/* =======================================================
+   WLAN ZURÜCKSETZEN
+======================================================= */
+
+async function resetWifi() {
+
+    if (
+        !confirm(
+            "Gespeicherte WLAN-Daten wirklich löschen?"
+        )
+    ) {
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/wifi/reset",
+                {
+                    method:
+                        "POST"
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "HTTP " +
+                response.status
+            );
+        }
+
+
+        showToast(
+            "WLAN-Daten wurden gelöscht."
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
+
+
+        showToast(
+            "Fehler beim Zurücksetzen des WLAN."
+        );
+    }
+}
+
+
+/* =======================================================
+   TAB NAVIGATION
+======================================================= */
+
+const tabButtons = document.querySelectorAll('.tab-button');
+const tabPanels = document.querySelectorAll('.tab-panel');
+
+for (const button of tabButtons) {
+    button.addEventListener('click', () => {
+        const target = button.dataset.tab;
+
+        tabButtons.forEach((btn) => {
+            btn.classList.toggle('active', btn === button);
+        });
+
+        tabPanels.forEach((panel) => {
+            panel.classList.toggle('active', panel.id === `tab-${target}`);
+        });
+    });
+}
+
+
+/* =======================================================
+   START
+======================================================= */
+
+loadState();
+
+
+setInterval(
+    loadState,
+    1000
+);
+
+</script>
+
+</body>
+</html>
