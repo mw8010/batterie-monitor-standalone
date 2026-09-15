@@ -126,8 +126,11 @@ Die Weboberfläche verwendet unter anderem folgende lokale Endpunkte:
 - `POST /api/wifi/save`: WLAN-Zugangsdaten speichern
 - `POST /api/wifi/reset`: gespeicherte WLAN-Daten löschen
 
-## Lizenz
+## Lizenzen
 
-Dieses Repository enthält derzeit noch keine separate Lizenzdatei. Vor einer
-öffentlichen Weiterverwendung sollte eine passende Open-Source-Lizenz ergänzt
-werden.
+- **Software:** GNU General Public License v3.0, siehe [LICENSE](LICENSE).
+- **Hardware-Design:** CERN Open Hardware Licence v2 - Strongly Reciprocal,
+  siehe [LICENSE-HARDWARE](LICENSE-HARDWARE).
+
+Die vollständigen Lizenzbedingungen sind in den jeweiligen Lizenzdateien
+beziehungsweise auf den dort verlinkten offiziellen Seiten enthalten.
