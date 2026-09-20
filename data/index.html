@@ -1632,6 +1632,39 @@
                 <p class="muted">Der angezeigte SoC basiert primär auf Coulomb Counting. Die Spannung dient als Diagnosewert.</p>
             </div>
 
+            <div class="card diagnostic-card">
+                <h2>INA226 Messdiagnose</h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Messwert</th>
+                            <th>Wert</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Signierter Strom</td>
+                            <td id="debugCurrent" class="diagnostic-value">-- A</td>
+                        </tr>
+                        <tr>
+                            <td>Shuntspannung</td>
+                            <td id="debugShuntVoltage" class="diagnostic-value">-- mV</td>
+                        </tr>
+                        <tr>
+                            <td>Leistung signiert</td>
+                            <td id="debugPower" class="diagnostic-value">-- W</td>
+                        </tr>
+                        <tr>
+                            <td>INA226</td>
+                            <td id="debugInaStatus" class="diagnostic-value">--</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p class="muted">Positive Stromwerte bedeuten Entladung, negative Stromwerte bedeuten Ladung.</p>
+            </div>
+
         </div>
     </div>
 
@@ -1951,10 +1984,18 @@ function updateState(data) {
         byId("batteryState");
 
 
+    const stateLabels = {
+        charging: "Lädt",
+        discharging: "Entlädt",
+        idle: "Ruhezustand"
+    };
+
     if (batteryState) {
 
         batteryState.innerHTML =
-            `<span class="state-icon">⚡</span>${state}`;
+            `<span class="state-icon">⚡</span>${
+                stateLabels[state] || state
+            }`;
     }
 
 
@@ -2004,6 +2045,11 @@ function updateState(data) {
         const power =
             Number(data.power);
 
+        const displayCurrent =
+            state === "discharging"
+                ? Math.abs(current)
+                : current;
+
 
         setText(
             "voltage",
@@ -2015,8 +2061,8 @@ function updateState(data) {
 
         setText(
             "current",
-            Number.isFinite(current)
-                ? `${current.toFixed(2)}`
+            Number.isFinite(displayCurrent)
+                ? `${displayCurrent.toFixed(2)}`
                 : "--"
         );
 
@@ -2137,6 +2183,36 @@ function updateState(data) {
             data.socVoltage,
             1
         )} %`
+    );
+
+
+    /* ---------------------------------------------------
+       INA226 DIAGNOSE
+    --------------------------------------------------- */
+
+    setText(
+        "debugCurrent",
+        `${formatNumber(data.current, 3)} A`
+    );
+
+    setText(
+        "debugShuntVoltage",
+        `${formatNumber(
+            Number(data.shuntVoltage) * 1000,
+            3
+        )} mV`
+    );
+
+    setText(
+        "debugPower",
+        `${formatNumber(data.power, 2)} W`
+    );
+
+    setText(
+        "debugInaStatus",
+        data.ina226Available === true
+            ? "verfügbar"
+            : "nicht verfügbar"
     );
 
 

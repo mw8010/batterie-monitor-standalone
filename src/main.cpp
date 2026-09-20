@@ -46,7 +46,7 @@ const float SHUNT_RESISTANCE_OHM =
 //   negativer Strom = Entladung
 //
 
-const int CURRENT_DIRECTION = +1;
+const int CURRENT_DIRECTION = -1;
 
 // ------------------------------------------------------------
 // Stromschwellen
@@ -55,6 +55,9 @@ const int CURRENT_DIRECTION = +1;
 const float IDLE_CURRENT_A        = 0.20f;
 const float CHARGING_CURRENT_A    = 0.50f;
 const float DISCHARGING_CURRENT_A = 0.50f;
+
+// Mindeststrom für die Zeitprognose, auch im Ruhezustand.
+const float ESTIMATION_MIN_CURRENT_A = 0.01f;
 
 // ------------------------------------------------------------
 // Vollerkennung
@@ -167,6 +170,7 @@ const unsigned long WIFI_SCAN_COOLDOWN_MS = 3000UL;
 float batteryVoltage = 0.0f;
 float batteryCurrent = 0.0f;
 float batteryPower   = 0.0f;
+float batteryShuntVoltage = 0.0f;
 
 bool ina226Available = false;
 
@@ -546,16 +550,14 @@ void updateTimeEstimates()
     // --------------------------------------------------------
 
     if (
-        batteryState ==
-            STATE_DISCHARGING &&
-        averageDischargeCurrent >
-            DISCHARGING_CURRENT_A &&
+        batteryCurrent >
+            ESTIMATION_MIN_CURRENT_A &&
         remainingAh > 0.0f
     )
     {
         timeToEmptyHours =
             remainingAh /
-            averageDischargeCurrent;
+            batteryCurrent;
     }
     else
     {
@@ -568,16 +570,14 @@ void updateTimeEstimates()
     // --------------------------------------------------------
 
     if (
-        batteryState ==
-            STATE_CHARGING &&
-        averageChargeCurrent >
-            CHARGING_CURRENT_A &&
+        batteryCurrent <
+            -ESTIMATION_MIN_CURRENT_A &&
         ampHoursUsed > 0.0f
     )
     {
         timeToFullHours =
             ampHoursUsed /
-            averageChargeCurrent;
+            fabs(batteryCurrent);
     }
     else
     {
@@ -833,12 +833,6 @@ bool setupINA226()
     // Continuous shunt + bus
     INA0.setMode(7);
 
-    // 500 A / 150 µOhm
-    INA0.setMaxCurrentShunt(
-        MAX_CURRENT_A,
-        SHUNT_RESISTANCE_OHM
-    );
-
     Serial.println(
         "INA226 erfolgreich initialisiert."
     );
@@ -872,12 +866,12 @@ bool readINA226()
     float voltage =
         INA0.getBusVoltage();
 
-    float rawCurrent =
-        INA0.getCurrent();
+    float shuntVoltage =
+        INA0.getShuntVoltage();
 
     if (
         !isValidFloat(voltage) ||
-        !isValidFloat(rawCurrent)
+        !isValidFloat(shuntVoltage)
     )
     {
         Serial.println(
@@ -888,7 +882,8 @@ bool readINA226()
     }
 
     float current =
-        rawCurrent *
+        (shuntVoltage /
+         SHUNT_RESISTANCE_OHM) *
         CURRENT_DIRECTION;
 
     batteryVoltage =
@@ -896,6 +891,9 @@ bool readINA226()
 
     batteryCurrent =
         current;
+
+    batteryShuntVoltage =
+        shuntVoltage;
 
     batteryPower =
         batteryVoltage *
@@ -913,6 +911,15 @@ bool readINA226()
     calculateAverageCurrents();
 
     updateBatteryState();
+
+    Serial.print("INA226 | Spannung: ");
+    Serial.print(batteryVoltage, 3);
+    Serial.print(" V | Strom: ");
+    Serial.print(batteryCurrent, 3);
+    Serial.print(" A | Leistung: ");
+    Serial.print(batteryPower, 3);
+    Serial.print(" W | Zustand: ");
+    Serial.println(getBatteryStateString());
 
     updateCoulombCounting();
 
@@ -1230,6 +1237,9 @@ void createStateJSON(
 
     doc["power"] =
         batteryPower;
+
+    doc["shuntVoltage"] =
+        batteryShuntVoltage;
 
     doc["capacityAh"] =
         BATTERY_CAPACITY_AH;
