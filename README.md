@@ -35,6 +35,18 @@ und stellt die Werte über eine lokale Weboberfläche bereit.
 
 Die INA226-Standardadresse ist `0x40`.
 
+### Messanschlüsse des INA226
+
+| INA226-Anschluss | Verbindung |
+| --- | --- |
+| VBUS | Batterie-Plus |
+| IN+ | Shunt auf der Batterieseite |
+| IN- | Shunt auf der Verbraucherseite |
+
+Mit dieser Verkabelung wird eine Entladung als positiver Strom und eine
+Ladung als negativer Strom angezeigt. Der Shunt liegt dabei im Minuspfad der
+Batterie zwischen Batterie und Verbrauchern beziehungsweise Ladequelle.
+
 > **Sicherheit:** Die Batterie- und Shunt-Verkabelung kann hohe Ströme führen.
 > Sicherungen, Leitungsquerschnitte, Polarität und Messbereich müssen zur
 > konkreten Anlage passen. Arbeiten an Batteriesystemen nur fachgerecht und
